@@ -1,9 +1,8 @@
 plugins {
-    alias(libs.plugins.android.application)
+    id("com.android.application") version "8.9.3"
     alias(libs.plugins.kotlin.android)
-    // No 'kotlin.compose' plugin exists, buildFeatures.compose = true handles it.
     id("com.google.gms.google-services")
-    alias(libs.plugins.kotlin.compose)
+    id("org.jetbrains.kotlin.plugin.compose") version "2.0.21"
 }
 
 android {
@@ -29,11 +28,11 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
     kotlinOptions {
-        jvmTarget = "1.8"
+        jvmTarget = "17"
     }
     buildFeatures {
         compose = true
