@@ -1,5 +1,7 @@
 package com.kshitiz.messmate.ui.navigation
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -11,24 +13,36 @@ import com.kshitiz.messmate.ui.auth.LoginDetailsScreen
 import com.kshitiz.messmate.ui.auth.admin.AdminLoginScreen
 import com.kshitiz.messmate.ui.main.AdminPortalScreen
 import com.kshitiz.messmate.ui.main.MainScreen
+import com.google.firebase.auth.FirebaseAuth
 
 sealed class Screen(val route: String) {
-    data object Auth : Screen("auth")
-    data object Login : Screen("login")
-    data object LoginDetails : Screen("login_details")
-    data object CreateAccount : Screen("create_account")
-    data object AdminLogin : Screen("admin_login")
-    data object AdminPortal : Screen("admin_portal")
-    data object Main : Screen("main")
+    object Auth : Screen("auth")
+    object Login : Screen("login")
+    object LoginDetails : Screen("login_details")
+    object CreateAccount : Screen("create_account")
+    object AdminLogin : Screen("admin_login")
+    object AdminPortal : Screen("admin_portal")
+    object Main : Screen("main")
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun AppNavigation() {
     val navController = rememberNavController()
 
-    NavHost(navController = navController, startDestination = Screen.Auth.route) {
+    // Decide start destination based on current Firebase user session
+    val firebaseAuth: FirebaseAuth = FirebaseAuth.getInstance()
+    val startDest = if (firebaseAuth.currentUser != null) {
+        Screen.Main.route
+    } else {
+        Screen.Auth.route
+    }
+
+    NavHost(navController = navController, startDestination = startDest) {
         // --- AUTHENTICATION FLOW ---
         navigation(startDestination = Screen.Login.route, route = Screen.Auth.route) {
+
+            // 1. Landing Screen (Choose Login, Signup, or Admin)
             composable(Screen.Login.route) {
                 LoginScreen(
                     onSignInClick = { navController.navigate(Screen.LoginDetails.route) },
@@ -36,10 +50,12 @@ fun AppNavigation() {
                     onAdminLoginClick = { navController.navigate(Screen.AdminLogin.route) }
                 )
             }
+
+            // 2. User Login Screen (Enter Email/Pass)
             composable(Screen.LoginDetails.route) {
                 LoginDetailsScreen(
-                    onSignInClick = { _, _ ->
-                        // On success, navigate to the main app graph
+                    onLoginSuccess = {
+                        // Only navigate when the ViewModel reports success
                         navController.navigate(Screen.Main.route) {
                             popUpTo(Screen.Auth.route) { inclusive = true }
                         }
@@ -47,10 +63,12 @@ fun AppNavigation() {
                     onCreateAccountClick = { navController.navigate(Screen.CreateAccount.route) }
                 )
             }
+
+            // 3. Create Account Screen
             composable(Screen.CreateAccount.route) {
                 CreateAccountScreen(
-                    onRegisterClick = { _, _, _ ->
-                        // On success, navigate to the main app graph
+                    onAccountCreatedSuccess = {
+                        // Only navigate when the ViewModel reports success
                         navController.navigate(Screen.Main.route) {
                             popUpTo(Screen.Auth.route) { inclusive = true }
                         }
@@ -59,10 +77,11 @@ fun AppNavigation() {
                     onLoginClick = { navController.navigate(Screen.LoginDetails.route) }
                 )
             }
+
+            // 4. Admin Login Screen
             composable(Screen.AdminLogin.route) {
                 AdminLoginScreen(
-                    onAdminLoginClick = { _, _ ->
-                        // On success, navigate to the admin portal
+                    onAdminLoginClick = {
                         navController.navigate(Screen.AdminPortal.route) {
                             popUpTo(Screen.Auth.route) { inclusive = true }
                         }
@@ -74,7 +93,6 @@ fun AppNavigation() {
 
         // --- MAIN APP (USER) FLOW ---
         composable(route = Screen.Main.route) {
-            // This loads the Scaffold with the bottom navigation bar
             MainScreen()
         }
 

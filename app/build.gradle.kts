@@ -1,5 +1,5 @@
 plugins {
-    id("com.android.application") version "8.9.3"
+    id("com.android.application") version "8.13.1"
     alias(libs.plugins.kotlin.android)
     id("com.google.gms.google-services")
     id("org.jetbrains.kotlin.plugin.compose") version "2.0.21"
@@ -60,6 +60,7 @@ dependencies {
     implementation(platform("com.google.firebase:firebase-bom:33.1.2"))
     implementation("com.google.firebase:firebase-auth") // Version is managed by the BOM
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.10.2") // Stable version for .await()
+    implementation("com.google.firebase:firebase-firestore")
 
     // --- Koin for Dependency Injection ---
     implementation("io.insert-koin:koin-android:4.1.1")
@@ -68,6 +69,9 @@ dependencies {
     // --- Networking (for MainRepository) ---
     implementation("com.squareup.retrofit2:retrofit:3.0.0")
     implementation("com.squareup.retrofit2:converter-gson:3.0.0")
+
+    // --- ZXing for QR Code generation ---
+    implementation("com.google.zxing:core:3.5.3")
 
     // --- Testing ---
     testImplementation(libs.junit)

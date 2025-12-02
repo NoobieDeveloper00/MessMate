@@ -1,5 +1,6 @@
 package com.kshitiz.messmate.ui.auth
 
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -12,21 +13,43 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.kshitiz.messmate.ui.theme.MessMateTheme
+import com.kshitiz.messmate.util.Resource
+import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun LoginDetailsScreen(
-    onSignInClick: (String, String) -> Unit,
-    onCreateAccountClick: () -> Unit
+    onCreateAccountClick: () -> Unit,
+    onLoginSuccess: () -> Unit,
+    viewModel: AuthViewModel = koinViewModel()
 ) {
     var email by rememberSaveable { mutableStateOf("") }
     var password by rememberSaveable { mutableStateOf("") }
+
+    val authState by viewModel.authState.collectAsState()
+    val context = LocalContext.current
+
+    // Observe Authentication State
+    LaunchedEffect(authState) {
+        when (val state = authState) {
+            is Resource.Success -> {
+                if (state.data != null) {
+                    Toast.makeText(context, "Welcome back!", Toast.LENGTH_SHORT).show()
+                    onLoginSuccess()
+                    viewModel.resetState()
+                }
+            }
+            is Resource.Error -> {
+                Toast.makeText(context, state.message, Toast.LENGTH_LONG).show()
+            }
+            else -> {}
+        }
+    }
 
     Box(
         modifier = Modifier
@@ -72,7 +95,7 @@ fun LoginDetailsScreen(
             color = MaterialTheme.colorScheme.surface,
             shape = RoundedCornerShape(topStart = 30.dp, topEnd = 30.dp)
         ) {
-             Column(
+            Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(horizontal = 24.dp, vertical = 32.dp),
@@ -118,14 +141,24 @@ fun LoginDetailsScreen(
                 Spacer(modifier = Modifier.height(32.dp))
 
                 // Sign In Button
+                val isFormValid = email.isNotBlank() && password.isNotBlank()
                 Button(
-                    onClick = { onSignInClick(email, password) },
+                    onClick = { viewModel.login(email, password) },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(50.dp),
-                    shape = RoundedCornerShape(12.dp)
+                    shape = RoundedCornerShape(12.dp),
+                    enabled = isFormValid && authState !is Resource.Loading
                 ) {
-                    Text(text = "Sign In", fontSize = 16.sp)
+                    if (authState is Resource.Loading) {
+                        CircularProgressIndicator(
+                            color = MaterialTheme.colorScheme.onPrimary,
+                            modifier = Modifier.size(24.dp),
+                            strokeWidth = 2.dp
+                        )
+                    } else {
+                        Text(text = "Sign In", fontSize = 16.sp)
+                    }
                 }
 
                 Spacer(modifier = Modifier.weight(1f))
@@ -141,12 +174,3 @@ fun LoginDetailsScreen(
         }
     }
 }
-
-@Preview(showSystemUi = true)
-@Composable
-fun LoginDetailsScreenPreview() {
-    MessMateTheme {
-        LoginDetailsScreen(onSignInClick = { _, _ -> }, onCreateAccountClick = {})
-    }
-}
-

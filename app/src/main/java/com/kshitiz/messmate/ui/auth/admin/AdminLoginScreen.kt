@@ -1,17 +1,18 @@
 package com.kshitiz.messmate.ui.auth.admin
 
+import android.widget.Toast
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AdminPanelSettings
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -19,16 +20,39 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.kshitiz.messmate.ui.auth.AuthViewModel
 import com.kshitiz.messmate.ui.theme.MessMateTheme
+import com.kshitiz.messmate.util.Resource
+import org.koin.androidx.compose.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AdminLoginScreen(
-    onAdminLoginClick: (String, String) -> Unit,
-    onNavigateBack: () -> Unit
+    onAdminLoginClick: () -> Unit,
+    onNavigateBack: () -> Unit,
+    viewModel: AuthViewModel = koinViewModel()
 ) {
     var email by rememberSaveable { mutableStateOf("") }
     var password by rememberSaveable { mutableStateOf("") }
+
+    val authState by viewModel.authState.collectAsState()
+    val context = LocalContext.current
+
+    LaunchedEffect(authState) {
+        when (val state = authState) {
+            is Resource.Success -> {
+                // Only navigate when admin is validated
+                if (state.data != null) {
+                    onAdminLoginClick()
+                    viewModel.resetState()
+                }
+            }
+            is Resource.Error -> {
+                Toast.makeText(context, state.message, Toast.LENGTH_LONG).show()
+            }
+            else -> {}
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -94,13 +118,22 @@ fun AdminLoginScreen(
             Spacer(modifier = Modifier.height(32.dp))
 
             Button(
-                onClick = { onAdminLoginClick(email, password) },
+                onClick = { viewModel.adminLogin(email, password) },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(50.dp),
-                shape = RoundedCornerShape(12.dp)
+                shape = RoundedCornerShape(12.dp),
+                enabled = email.isNotBlank() && password.isNotBlank() && authState !is Resource.Loading
             ) {
-                Text(text = "Login as Admin", fontSize = 16.sp)
+                if (authState is Resource.Loading) {
+                    CircularProgressIndicator(
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        modifier = Modifier.size(24.dp),
+                        strokeWidth = 2.dp
+                    )
+                } else {
+                    Text(text = "Login as Admin", fontSize = 16.sp)
+                }
             }
         }
     }
@@ -110,6 +143,6 @@ fun AdminLoginScreen(
 @Composable
 private fun AdminLoginScreenPreview() {
     MessMateTheme {
-        AdminLoginScreen(onAdminLoginClick = { _, _ -> }, onNavigateBack = {})
+        AdminLoginScreen(onAdminLoginClick = { }, onNavigateBack = {})
     }
 }

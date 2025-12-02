@@ -2,9 +2,7 @@ package com.kshitiz.messmate.ui.main
 
 import android.os.Build
 import androidx.annotation.RequiresApi
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.CheckCircle
@@ -25,6 +23,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.kshitiz.messmate.ui.main.menu.MealMenuScreen
 import com.kshitiz.messmate.ui.main.menu.MenuScreen
+import com.kshitiz.messmate.ui.main.attendance.AttendanceScreen
 
 // --- Sealed class for Bottom Navigation routes ---
 sealed class MainScreenRoutes(val route: String, val label: String, val icon: ImageVector) {
@@ -88,14 +87,6 @@ fun MainScreen() {
             composable(MainScreenRoutes.Attendance.route) { AttendanceScreen() }
             composable(MainScreenRoutes.Nutrition.route) { NutritionScreen() }
         }
-    }
-}
-
-// --- Placeholder Screens ---
-@Composable
-fun AttendanceScreen() {
-    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        Text("Attendance Screen")
     }
 }
 
