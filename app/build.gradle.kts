@@ -1,5 +1,5 @@
 plugins {
-    id("com.android.application") version "8.13.1"
+    id("com.android.application") version "8.13.2"
     alias(libs.plugins.kotlin.android)
     id("com.google.gms.google-services")
     id("org.jetbrains.kotlin.plugin.compose") version "2.0.21"
@@ -61,10 +61,14 @@ dependencies {
     implementation("com.google.firebase:firebase-auth") // Version is managed by the BOM
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.10.2") // Stable version for .await()
     implementation("com.google.firebase:firebase-firestore")
+    implementation("com.google.firebase:firebase-storage")
 
     // --- Koin for Dependency Injection ---
     implementation("io.insert-koin:koin-android:4.1.1")
     implementation("io.insert-koin:koin-androidx-compose:4.1.1")
+
+    // --- Images ---
+    implementation("io.coil-kt:coil-compose:2.6.0")
 
     // --- Networking (for MainRepository) ---
     implementation("com.squareup.retrofit2:retrofit:3.0.0")
@@ -72,6 +76,18 @@ dependencies {
 
     // --- ZXing for QR Code generation ---
     implementation("com.google.zxing:core:3.5.3")
+
+    // --- CameraX (prepare for camera capabilities) ---
+    val cameraVersion = "1.3.1"
+    implementation("androidx.camera:camera-core:$cameraVersion")
+    implementation("androidx.camera:camera-camera2:$cameraVersion")
+    implementation("androidx.camera:camera-lifecycle:$cameraVersion")
+    implementation("androidx.camera:camera-view:$cameraVersion")
+
+    // Needed for ProcessCameraProvider ListenableFuture
+    implementation("androidx.concurrent:concurrent-futures:1.2.0")
+    // Guava for ListenableFuture used by CameraX
+    implementation("com.google.guava:guava:31.1-android")
 
     // --- Testing ---
     testImplementation(libs.junit)

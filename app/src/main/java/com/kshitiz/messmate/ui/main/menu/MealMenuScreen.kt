@@ -8,15 +8,21 @@ import androidx.compose.material3.Divider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.kshitiz.messmate.ui.theme.MessMateTheme
+import org.koin.androidx.compose.koinViewModel
+import java.util.Locale
 
 // Hardcoded data source for the menus
 private val menus = mapOf(
@@ -29,8 +35,31 @@ private val menus = mapOf(
 @Composable
 fun MealMenuScreen(
     mealType: String,
-    onFeedbackClick: () -> Unit
+    onFeedbackClick: () -> Unit,
+    viewModel: MenuViewModel = koinViewModel()
 ) {
+    val context = LocalContext.current
+    val optOutState by viewModel.optOutState.collectAsState()
+    val optedOutMeals by viewModel.optedOutMeals.collectAsState()
+    val mealKey = mealType.lowercase(Locale.ENGLISH)
+
+    LaunchedEffect(optOutState) {
+        when (optOutState) {
+            is com.kshitiz.messmate.util.Resource.Success -> {
+                val msg = (optOutState as com.kshitiz.messmate.util.Resource.Success<String>).data
+                    ?: "Opted out"
+                android.widget.Toast.makeText(context, msg, android.widget.Toast.LENGTH_SHORT)
+                    .show()
+            }
+            is com.kshitiz.messmate.util.Resource.Error -> {
+                val msg = (optOutState as com.kshitiz.messmate.util.Resource.Error).message
+                android.widget.Toast.makeText(context, msg, android.widget.Toast.LENGTH_SHORT)
+                    .show()
+            }
+            else -> {}
+        }
+    }
+
     val menuItems = menus[mealType] ?: listOf("Menu not available.")
 
     Box(
@@ -88,6 +117,27 @@ fun MealMenuScreen(
                         modifier = Modifier.width(100.dp),
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f)
                     )
+                }
+            }
+
+            // --- Opt-Out Action (placed just above Feedback) ---
+            if (optedOutMeals.contains(mealKey)) {
+                Text(
+                    text = "Opted Out",
+                    style = MaterialTheme.typography.titleSmall,
+                    color = MaterialTheme.colorScheme.error,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 4.dp)
+                )
+            } else {
+                Button(
+                    onClick = { viewModel.optOutFromMeal(mealType) },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 8.dp)
+                ) {
+                    Text("Opt Out")
                 }
             }
 

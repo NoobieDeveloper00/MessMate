@@ -14,6 +14,7 @@ import com.kshitiz.messmate.ui.auth.admin.AdminLoginScreen
 import com.kshitiz.messmate.ui.main.AdminPortalScreen
 import com.kshitiz.messmate.ui.main.MainScreen
 import com.google.firebase.auth.FirebaseAuth
+import com.kshitiz.messmate.ui.main.admin.AdminScannerScreen
 
 sealed class Screen(val route: String) {
     object Auth : Screen("auth")
@@ -23,6 +24,7 @@ sealed class Screen(val route: String) {
     object AdminLogin : Screen("admin_login")
     object AdminPortal : Screen("admin_portal")
     object Main : Screen("main")
+    data object AdminScanner : Screen("admin_scanner")
 }
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -98,7 +100,21 @@ fun AppNavigation() {
 
         // --- ADMIN PORTAL FLOW ---
         composable(route = Screen.AdminPortal.route) {
-            AdminPortalScreen()
+            AdminPortalScreen(
+                onLogout = {
+                    // Sign out and return to auth flow
+                    FirebaseAuth.getInstance().signOut()
+                    navController.navigate(Screen.Auth.route) {
+                        popUpTo(0) { inclusive = true }
+                    }
+                },
+                onNavigateToScanner = { navController.navigate(Screen.AdminScanner.route) }
+            )
+        }
+
+        // --- ADMIN SCANNER ---
+        composable(route = Screen.AdminScanner.route) {
+            AdminScannerScreen()
         }
     }
 }

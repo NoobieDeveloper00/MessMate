@@ -4,7 +4,7 @@ import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.BarChart
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.RestaurantMenu
 import androidx.compose.material3.*
@@ -24,12 +24,14 @@ import androidx.navigation.navArgument
 import com.kshitiz.messmate.ui.main.menu.MealMenuScreen
 import com.kshitiz.messmate.ui.main.menu.MenuScreen
 import com.kshitiz.messmate.ui.main.attendance.AttendanceScreen
+import com.kshitiz.messmate.ui.profile.ProfileViewModel
+import com.kshitiz.messmate.ui.profile.ProfileScreen as ProfileScreenComposable
 
 // --- Sealed class for Bottom Navigation routes ---
 sealed class MainScreenRoutes(val route: String, val label: String, val icon: ImageVector) {
     data object Menu : MainScreenRoutes("menu_home", "Menu", Icons.Default.RestaurantMenu)
     data object Attendance : MainScreenRoutes("attendance", "Attendance", Icons.Default.CheckCircle)
-    data object Nutrition : MainScreenRoutes("nutrition", "Nutrition", Icons.Default.BarChart)
+    data object Profile : MainScreenRoutes("profile", "Profile", Icons.Default.Person)
 }
 
 // --- Main Container with Scaffold and Bottom Navigation ---
@@ -40,7 +42,7 @@ fun MainScreen() {
     val bottomNavItems = listOf(
         MainScreenRoutes.Menu,
         MainScreenRoutes.Attendance,
-        MainScreenRoutes.Nutrition
+        MainScreenRoutes.Profile
     )
 
     Scaffold(
@@ -85,15 +87,13 @@ fun MainScreen() {
                 MealMenuScreen(mealType = mealType, onFeedbackClick = { /*TODO*/ })
             }
             composable(MainScreenRoutes.Attendance.route) { AttendanceScreen() }
-            composable(MainScreenRoutes.Nutrition.route) { NutritionScreen() }
+            composable(MainScreenRoutes.Profile.route) { ProfileHost() }
         }
     }
 }
 
 @Composable
-fun NutritionScreen() {
-    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        Text("Nutrition Screen")
-    }
+fun ProfileHost(viewModel: ProfileViewModel = org.koin.androidx.compose.koinViewModel()) {
+    ProfileScreenComposable(viewModel)
 }
 
