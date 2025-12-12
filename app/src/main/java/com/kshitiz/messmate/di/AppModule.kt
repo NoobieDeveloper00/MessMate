@@ -9,6 +9,9 @@ import com.kshitiz.messmate.ui.main.menu.MenuViewModel
 import com.kshitiz.messmate.ui.profile.ProfileViewModel
 import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
+import com.kshitiz.messmate.ui.main.menu.FeedbackViewModel
+import com.kshitiz.messmate.ui.main.admin.feedback.AdminFeedbackViewModel
+import com.kshitiz.messmate.ui.main.admin.menu.AdminMenuViewModel
 
 val appModule = module {
     // Provide Firebase instances
@@ -24,4 +27,10 @@ val appModule = module {
     viewModel { MenuViewModel(get<FirebaseAuth>(), get<FirebaseFirestore>()) }
     // Provide ProfileViewModel with Auth, Firestore, and Storage
     viewModel { ProfileViewModel(get<FirebaseAuth>(), get<FirebaseFirestore>(), get<FirebaseStorage>()) }
+
+    viewModel { FeedbackViewModel(get<FirebaseAuth>(), get<FirebaseFirestore>()) }
+
+    viewModel { AdminFeedbackViewModel(get<FirebaseFirestore>()) }
+
+    viewModel { AdminMenuViewModel(get()) }
 }

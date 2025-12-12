@@ -1,37 +1,50 @@
 package com.kshitiz.messmate.ui.theme
 
+import android.app.Activity
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.graphics.Color.Companion.White
-
-// --- Color Palettes ---
-private val DarkColorScheme = darkColorScheme(
-    primary = Verdigris,
-    background = DarkJungleGreen,
-    surface = GraniteGray,
-    surfaceVariant = GraniteGray,
-    onPrimary = Cultured,
-    onBackground = Cultured,
-    onSurface = Cultured,
-    onSurfaceVariant = Cultured,
-    primaryContainer = Verdigris,
-    onPrimaryContainer = Cultured
-)
+import androidx.compose.runtime.SideEffect
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.platform.LocalView
+import androidx.core.view.WindowCompat
 
 private val LightColorScheme = lightColorScheme(
-    primary = Verdigris,
-    background = Cultured,
-    surface = White,
-    surfaceVariant = White,
-    onPrimary = White,
-    onBackground = DarkJungleGreen,
-    onSurface = DarkJungleGreen,
-    onSurfaceVariant = DarkJungleGreen,
-    primaryContainer = Verdigris,
-    onPrimaryContainer = White
+    primary = BrandPrimary,
+    onPrimary = Color.White,
+    primaryContainer = BrandPrimaryLight,
+    onPrimaryContainer = BrandPrimaryDark,
+
+    secondary = BrandSecondary,
+    onSecondary = Color.White,
+    secondaryContainer = BrandSecondaryContainer,
+    onSecondaryContainer = Color(0xFFBF360C), // Deep Orange
+
+    background = OffWhite,
+    onBackground = TextPrimary,
+    surface = CardSurface,
+    onSurface = TextPrimary,
+    surfaceVariant = Color(0xFFEEEEEE),
+    onSurfaceVariant = TextSecondary,
+
+    error = ErrorRed,
+    onError = Color.White
+)
+
+private val DarkColorScheme = darkColorScheme(
+    primary = DarkPrimary,
+    onPrimary = Color.Black,
+    primaryContainer = BrandPrimaryDark,
+
+    secondary = BrandSecondary,
+
+    background = DarkBackground,
+    onBackground = Color.White,
+    surface = DarkSurface,
+    onSurface = Color.White
 )
 
 @Composable
@@ -39,9 +52,17 @@ fun MessMateTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     content: @Composable () -> Unit
 ) {
-    val colorScheme = when {
-        darkTheme -> DarkColorScheme
-        else -> LightColorScheme
+    val colorScheme = if (darkTheme) DarkColorScheme else LightColorScheme
+
+    val view = LocalView.current
+    if (!view.isInEditMode) {
+        SideEffect {
+            val window = (view.context as Activity).window
+            // Make status bar transparent so content flows behind it (Edge-to-Edge)
+            window.statusBarColor = Color.Transparent.toArgb()
+            // Dark icons on light background, Light icons on dark background
+            WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = !darkTheme
+        }
     }
 
     MaterialTheme(
@@ -50,4 +71,3 @@ fun MessMateTheme(
         content = content
     )
 }
-

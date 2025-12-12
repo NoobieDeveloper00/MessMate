@@ -23,8 +23,40 @@ class MenuViewModel(
     private val _optedOutMeals = MutableStateFlow<Set<String>>(emptySet())
     val optedOutMeals: StateFlow<Set<String>> = _optedOutMeals
 
+    // NEW: Tracks the Menu for the current day
+    private val _dailyMenu = MutableStateFlow<Map<String, List<String>>>(emptyMap())
+    val dailyMenu: StateFlow<Map<String, List<String>>> = _dailyMenu
+
     init {
-        // Listen for today's opt-out changes so UI can reflect status
+        fetchDailyMenu()
+        listenToOptOuts()
+    }
+
+    private fun fetchDailyMenu() {
+        // Get today's day name (e.g., "Monday", "Friday")
+        val dayOfWeek = SimpleDateFormat("EEEE", Locale.ENGLISH).format(Date())
+
+        firestore.collection("menus").document(dayOfWeek)
+            .get()
+            .addOnSuccessListener { document ->
+                if (document != null && document.exists()) {
+                    val menuMap = mutableMapOf<String, List<String>>()
+                    // Firestore keys are lowercase (breakfast), App uses Capitalized (Breakfast)
+                    // We map them here for easier UI usage
+                    menuMap["Breakfast"] = document.get("breakfast") as? List<String> ?: emptyList()
+                    menuMap["Lunch"] = document.get("lunch") as? List<String> ?: emptyList()
+                    menuMap["Snacks"] = document.get("snacks") as? List<String> ?: emptyList()
+                    menuMap["Dinner"] = document.get("dinner") as? List<String> ?: emptyList()
+
+                    _dailyMenu.value = menuMap
+                }
+            }
+            .addOnFailureListener {
+                // In a real app, handle error (e.g. show "Menu not found")
+            }
+    }
+
+    private fun listenToOptOuts() {
         val email = auth.currentUser?.email
         if (!email.isNullOrEmpty()) {
             val dateString = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
@@ -46,6 +78,7 @@ class MenuViewModel(
         }
     }
 
+    // ... (Keep existing optOutFromMeal and isBeforeCutoff logic exactly as is) ...
     fun optOutFromMeal(mealType: String) {
         val email = auth.currentUser?.email
         if (email.isNullOrEmpty()) {
@@ -54,7 +87,6 @@ class MenuViewModel(
         }
 
         val mealKey = mealType.lowercase(Locale.getDefault())
-        // Too late if current time is at or past cutoff
         if (!isBeforeCutoff(mealKey)) {
             _optOutState.value = Resource.Error("Too late to opt out for this meal")
             return
@@ -84,7 +116,7 @@ class MenuViewModel(
         val nowMinutes = now.get(java.util.Calendar.HOUR_OF_DAY) * 60 + now.get(java.util.Calendar.MINUTE)
         val cutoffMinutes = when (mealKey) {
             "breakfast" -> 7 * 60 + 0
-            "lunch" -> 10 * 60 + 0
+            "lunch" -> 12 * 60 + 0
             "snacks" -> 16 * 60 + 0
             "dinner" -> 19 * 60 + 0
             else -> 23 * 60 + 59

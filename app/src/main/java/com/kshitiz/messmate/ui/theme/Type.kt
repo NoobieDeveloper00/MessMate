@@ -8,50 +8,53 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import com.kshitiz.messmate.R
 
-// 1. Define the Poppins FontFamily
 val Poppins = FontFamily(
     Font(R.font.poppins_regular, FontWeight.Normal),
     Font(R.font.poppins_medium, FontWeight.Medium),
     Font(R.font.poppins_semibold, FontWeight.SemiBold),
-    Font(R.font.poppins_bold, FontWeight.Bold)
+    Font(R.font.poppins_bold, FontWeight.Bold),
+    Font(R.font.poppins_regular, FontWeight.Light) // Ensure you have this or use Regular
 )
 
-// 2. Update the Typography object to use the Poppins family
 val Typography = Typography(
-    displayLarge = TextStyle(
-        fontFamily = Poppins,
-        fontWeight = FontWeight.Bold,
-        fontSize = 57.sp,
-        lineHeight = 64.sp,
-        letterSpacing = (-0.25).sp
-    ),
+    // Massive Headings (e.g. "Menu")
     headlineLarge = TextStyle(
         fontFamily = Poppins,
-        fontWeight = FontWeight.SemiBold,
+        fontWeight = FontWeight.Bold,
         fontSize = 32.sp,
         lineHeight = 40.sp,
-        letterSpacing = 0.sp
+        color = TextPrimary
     ),
+    // Section Headers (e.g. "Up Next")
+    headlineMedium = TextStyle(
+        fontFamily = Poppins,
+        fontWeight = FontWeight.Bold,
+        fontSize = 24.sp,
+        lineHeight = 32.sp,
+        color = TextPrimary
+    ),
+    // Card Titles (e.g. "Lunch")
     titleLarge = TextStyle(
         fontFamily = Poppins,
-        fontWeight = FontWeight.Medium,
-        fontSize = 22.sp,
+        fontWeight = FontWeight.SemiBold,
+        fontSize = 20.sp,
         lineHeight = 28.sp,
-        letterSpacing = 0.sp
+        color = TextPrimary
     ),
+    // Standard Text
     bodyLarge = TextStyle(
         fontFamily = Poppins,
         fontWeight = FontWeight.Normal,
         fontSize = 16.sp,
         lineHeight = 24.sp,
-        letterSpacing = 0.5.sp
+        color = TextSecondary
     ),
-    labelSmall = TextStyle(
+    // Small Labels / Badges
+    labelMedium = TextStyle(
         fontFamily = Poppins,
         fontWeight = FontWeight.Medium,
-        fontSize = 11.sp,
+        fontSize = 12.sp,
         lineHeight = 16.sp,
         letterSpacing = 0.5.sp
     )
-    /* You can override other default text styles here as well */
 )

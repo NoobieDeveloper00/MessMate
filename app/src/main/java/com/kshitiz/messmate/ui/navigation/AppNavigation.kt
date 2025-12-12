@@ -17,34 +17,29 @@ import com.google.firebase.auth.FirebaseAuth
 import com.kshitiz.messmate.ui.main.admin.AdminScannerScreen
 
 sealed class Screen(val route: String) {
-    object Auth : Screen("auth")
-    object Login : Screen("login")
-    object LoginDetails : Screen("login_details")
-    object CreateAccount : Screen("create_account")
-    object AdminLogin : Screen("admin_login")
-    object AdminPortal : Screen("admin_portal")
-    object Main : Screen("main")
+    data object Auth : Screen("auth")
+    data object Login : Screen("login")
+    data object LoginDetails : Screen("login_details")
+    data object CreateAccount : Screen("create_account")
+    data object AdminLogin : Screen("admin_login")
+    data object AdminPortal : Screen("admin_portal")
+    data object Main : Screen("main")
     data object AdminScanner : Screen("admin_scanner")
+    data object AdminFeedback : Screen("admin_feedback")
+    data object AdminMenu : Screen("admin_menu")
 }
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun AppNavigation() {
     val navController = rememberNavController()
-
-    // Decide start destination based on current Firebase user session
     val firebaseAuth: FirebaseAuth = FirebaseAuth.getInstance()
-    val startDest = if (firebaseAuth.currentUser != null) {
-        Screen.Main.route
-    } else {
-        Screen.Auth.route
-    }
+    val startDest = if (firebaseAuth.currentUser != null) Screen.Main.route else Screen.Auth.route
 
     NavHost(navController = navController, startDestination = startDest) {
-        // --- AUTHENTICATION FLOW ---
-        navigation(startDestination = Screen.Login.route, route = Screen.Auth.route) {
 
-            // 1. Landing Screen (Choose Login, Signup, or Admin)
+        // --- AUTH FLOW ---
+        navigation(startDestination = Screen.Login.route, route = Screen.Auth.route) {
             composable(Screen.Login.route) {
                 LoginScreen(
                     onSignInClick = { navController.navigate(Screen.LoginDetails.route) },
@@ -52,12 +47,9 @@ fun AppNavigation() {
                     onAdminLoginClick = { navController.navigate(Screen.AdminLogin.route) }
                 )
             }
-
-            // 2. User Login Screen (Enter Email/Pass)
             composable(Screen.LoginDetails.route) {
                 LoginDetailsScreen(
                     onLoginSuccess = {
-                        // Only navigate when the ViewModel reports success
                         navController.navigate(Screen.Main.route) {
                             popUpTo(Screen.Auth.route) { inclusive = true }
                         }
@@ -65,12 +57,9 @@ fun AppNavigation() {
                     onCreateAccountClick = { navController.navigate(Screen.CreateAccount.route) }
                 )
             }
-
-            // 3. Create Account Screen
             composable(Screen.CreateAccount.route) {
                 CreateAccountScreen(
                     onAccountCreatedSuccess = {
-                        // Only navigate when the ViewModel reports success
                         navController.navigate(Screen.Main.route) {
                             popUpTo(Screen.Auth.route) { inclusive = true }
                         }
@@ -79,8 +68,6 @@ fun AppNavigation() {
                     onLoginClick = { navController.navigate(Screen.LoginDetails.route) }
                 )
             }
-
-            // 4. Admin Login Screen
             composable(Screen.AdminLogin.route) {
                 AdminLoginScreen(
                     onAdminLoginClick = {
@@ -95,26 +82,61 @@ fun AppNavigation() {
 
         // --- MAIN APP (USER) FLOW ---
         composable(route = Screen.Main.route) {
-            MainScreen()
-        }
-
-        // --- ADMIN PORTAL FLOW ---
-        composable(route = Screen.AdminPortal.route) {
-            AdminPortalScreen(
+            MainScreen(
+                onNavigateToFeedback = { mealType ->
+                    navController.navigate("feedback/$mealType")
+                },
                 onLogout = {
-                    // Sign out and return to auth flow
+                    // Actual Logout Logic
                     FirebaseAuth.getInstance().signOut()
+
+                    // Navigate back to Login and clear stack
                     navController.navigate(Screen.Auth.route) {
                         popUpTo(0) { inclusive = true }
                     }
-                },
-                onNavigateToScanner = { navController.navigate(Screen.AdminScanner.route) }
+                }
             )
         }
 
-        // --- ADMIN SCANNER ---
+        // --- ADMIN PORTAL ---
+        composable(route = Screen.AdminPortal.route) {
+            AdminPortalScreen(
+                onLogout = {
+                    FirebaseAuth.getInstance().signOut()
+                    navController.navigate(Screen.Auth.route) { popUpTo(0) { inclusive = true } }
+                },
+                onNavigateToScanner = { navController.navigate(Screen.AdminScanner.route) },
+                onNavigateToFeedback = { navController.navigate(Screen.AdminFeedback.route) },
+                onNavigateToMenu = { navController.navigate(Screen.AdminMenu.route) }
+            )
+        }
+
+        // --- ROOT LEVEL SCREENS ---
         composable(route = Screen.AdminScanner.route) {
             AdminScannerScreen()
+        }
+
+        composable(Screen.AdminMenu.route) {
+            com.kshitiz.messmate.ui.main.admin.menu.AdminMenuScreen(
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(
+            route = "feedback/{mealType}",
+            arguments = listOf(androidx.navigation.navArgument("mealType") { type = androidx.navigation.NavType.StringType })
+        ) { backStackEntry ->
+            val mealType = backStackEntry.arguments?.getString("mealType") ?: "Unknown"
+            com.kshitiz.messmate.ui.main.menu.FeedbackScreen(
+                mealType = mealType,
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(Screen.AdminFeedback.route) {
+            com.kshitiz.messmate.ui.main.admin.feedback.AdminFeedbackScreen(
+                onNavigateBack = { navController.popBackStack() }
+            )
         }
     }
 }

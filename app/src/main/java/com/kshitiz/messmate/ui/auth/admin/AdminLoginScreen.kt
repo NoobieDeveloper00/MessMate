@@ -12,16 +12,15 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.kshitiz.messmate.ui.auth.AuthViewModel
-import com.kshitiz.messmate.ui.theme.MessMateTheme
 import com.kshitiz.messmate.util.Resource
 import org.koin.androidx.compose.koinViewModel
 
@@ -41,7 +40,6 @@ fun AdminLoginScreen(
     LaunchedEffect(authState) {
         when (val state = authState) {
             is Resource.Success -> {
-                // Only navigate when admin is validated
                 if (state.data != null) {
                     onAdminLoginClick()
                     viewModel.resetState()
@@ -55,6 +53,8 @@ fun AdminLoginScreen(
     }
 
     Scaffold(
+        // FIX: Force padding for the status bar so it doesn't hide behind camera
+        modifier = Modifier.statusBarsPadding(),
         topBar = {
             TopAppBar(
                 title = { Text("Admin Portal") },
@@ -81,16 +81,19 @@ fun AdminLoginScreen(
                 modifier = Modifier.size(80.dp)
             )
             Spacer(modifier = Modifier.height(16.dp))
+
             Text(
                 text = "Admin Login",
                 style = MaterialTheme.typography.headlineMedium,
-                fontWeight = FontWeight.Bold
+                color = MaterialTheme.colorScheme.onBackground
             )
             Spacer(modifier = Modifier.height(8.dp))
+
             Text(
                 text = "Please enter your administrator credentials.",
                 textAlign = TextAlign.Center,
-                style = MaterialTheme.typography.bodyMedium
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
             Spacer(modifier = Modifier.height(32.dp))
 
@@ -123,26 +126,29 @@ fun AdminLoginScreen(
                     .fillMaxWidth()
                     .height(50.dp),
                 shape = RoundedCornerShape(12.dp),
-                enabled = email.isNotBlank() && password.isNotBlank() && authState !is Resource.Loading
+                enabled = email.isNotBlank() && password.isNotBlank() && authState !is Resource.Loading,
+                // FIX: Force White Text color.
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = Color.White
+                )
             ) {
                 if (authState is Resource.Loading) {
                     CircularProgressIndicator(
-                        color = MaterialTheme.colorScheme.onPrimary,
+                        color = Color.White,
                         modifier = Modifier.size(24.dp),
                         strokeWidth = 2.dp
                     )
                 } else {
-                    Text(text = "Login as Admin", fontSize = 16.sp)
+                    // Explicitly setting color to White just in case
+                    Text(
+                        text = "Login as Admin",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = Color.White
+                    )
                 }
             }
         }
-    }
-}
-
-@Preview(showSystemUi = true)
-@Composable
-private fun AdminLoginScreenPreview() {
-    MessMateTheme {
-        AdminLoginScreen(onAdminLoginClick = { }, onNavigateBack = {})
     }
 }

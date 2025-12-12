@@ -21,6 +21,9 @@ class AuthViewModel(
     private val firestore: FirebaseFirestore
 ) : ViewModel() {
 
+    // Define the allowed domain
+    private val ALLOWED_DOMAIN = "iiitu.ac.in"
+
     // Initialize based on current user; never start as Loading
     private val _authState = MutableStateFlow<Resource<FirebaseUser>>(
         firebaseAuth.currentUser?.let { Resource.Success(it) } ?: Resource.Success(null)
@@ -33,8 +36,15 @@ class AuthViewModel(
     }
 
     fun signup(name: String, email: String, password: String) = viewModelScope.launch {
+        // 1. Basic Validation
         if (name.isBlank() || email.isBlank() || password.isBlank()) {
             _authState.value = Resource.Error("Please fill all fields")
+            return@launch
+        }
+
+        // 2. Domain Validation (New Feature)
+        if (!email.trim().endsWith("@$ALLOWED_DOMAIN", ignoreCase = true)) {
+            _authState.value = Resource.Error("Access Restricted: Only @$ALLOWED_DOMAIN emails are allowed.")
             return@launch
         }
 
@@ -50,9 +60,29 @@ class AuthViewModel(
 
         _authState.value = Resource.Loading
         try {
+            // 3. Create User in Firebase Auth
             val result = firebaseAuth.createUserWithEmailAndPassword(email, password).await()
-            _authState.value = Resource.Success(result.user)
+            val user = result.user
+
+            if (user != null) {
+                // 4. Save Profile Data to Firestore (New Feature)
+                val userProfile = hashMapOf(
+                    "uid" to user.uid,
+                    "name" to name,
+                    "email" to email,
+                    "favouriteMeal" to "", // Default empty
+                    "photoUrl" to "",      // Default empty
+                    "role" to "student"    // Default role
+                )
+
+                // Save to 'users' collection using email as Document ID
+                firestore.collection("users").document(email).set(userProfile).await()
+
+                // 5. Success
+                _authState.value = Resource.Success(user)
+            }
         } catch (e: Exception) {
+            // If saving to Firestore fails, we catch it here too
             _authState.value = Resource.Error(mapSignupError(e))
         }
     }
@@ -60,6 +90,12 @@ class AuthViewModel(
     fun login(email: String, password: String) = viewModelScope.launch {
         if (email.isBlank() || password.isBlank()) {
             _authState.value = Resource.Error("Please fill all fields")
+            return@launch
+        }
+
+        // Optional: Enforce domain on login as well
+        if (!email.trim().endsWith("@$ALLOWED_DOMAIN", ignoreCase = true)) {
+            _authState.value = Resource.Error("Please use your institute email (@$ALLOWED_DOMAIN)")
             return@launch
         }
 
