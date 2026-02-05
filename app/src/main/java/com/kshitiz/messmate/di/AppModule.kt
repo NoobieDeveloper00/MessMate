@@ -3,15 +3,12 @@ package com.kshitiz.messmate.di
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
-import com.kshitiz.messmate.ui.auth.AuthViewModel
-import com.kshitiz.messmate.ui.main.admin.AdminViewModel
-import com.kshitiz.messmate.ui.main.menu.MenuViewModel
-import com.kshitiz.messmate.ui.profile.ProfileViewModel
+import com.kshitiz.messmate.data.repository.*
+import com.kshitiz.messmate.domain.repository.*
+import com.kshitiz.messmate.domain.usecase.*
+import com.kshitiz.messmate.ui.viewmodel.*
 import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
-import com.kshitiz.messmate.ui.main.menu.FeedbackViewModel
-import com.kshitiz.messmate.ui.main.admin.feedback.AdminFeedbackViewModel
-import com.kshitiz.messmate.ui.main.admin.menu.AdminMenuViewModel
 
 val appModule = module {
     // Provide Firebase instances
@@ -19,18 +16,34 @@ val appModule = module {
     single { FirebaseFirestore.getInstance() }
     single { FirebaseStorage.getInstance() }
 
-    // Provide AuthViewModel with both Auth and Firestore
-    viewModel { AuthViewModel(get<FirebaseAuth>(), get<FirebaseFirestore>()) }
-    // Provide AdminViewModel with Firestore
-    viewModel { AdminViewModel(get<FirebaseFirestore>()) }
-    // Provide MenuViewModel with Auth and Firestore
-    viewModel { MenuViewModel(get<FirebaseAuth>(), get<FirebaseFirestore>()) }
-    // Provide ProfileViewModel with Auth, Firestore, and Storage
-    viewModel { ProfileViewModel(get<FirebaseAuth>(), get<FirebaseFirestore>(), get<FirebaseStorage>()) }
+    // Repositories
+    single<AuthRepository> { AuthRepositoryImpl(get(), get()) }
+    single<ProfileRepository> { ProfileRepositoryImpl(get(), get()) }
+    single<MenuRepository> { MenuRepositoryImpl(get()) }
+    single<AttendanceRepository> { AttendanceRepositoryImpl(get()) }
+    single<FeedbackRepository> { FeedbackRepositoryImpl(get()) }
 
-    viewModel { FeedbackViewModel(get<FirebaseAuth>(), get<FirebaseFirestore>()) }
+    // Use Cases
+    factory { LoginUseCase(get()) }
+    factory { SignupUseCase(get()) }
+    factory { GetProfileUseCase(get()) }
+    factory { SaveProfileUseCase(get()) }
+    factory { GetDailyMenuUseCase(get()) }
+    factory { OptOutMealUseCase(get()) }
+    factory { MarkAttendanceUseCase(get()) }
+    factory { SubmitFeedbackUseCase(get()) }
+    factory { GetFeedbackSummaryUseCase(get()) }
+    factory { GetUserAttendanceUseCase(get()) }
+    factory { IsAdminUseCase(get()) }
+    factory { LogoutUseCase(get()) }
+    factory { GetCurrentUserUseCase(get()) }
 
-    viewModel { AdminFeedbackViewModel(get<FirebaseFirestore>()) }
-
+    // ViewModels
+    viewModel { AuthViewModel(get(), get(), get(), get(), get()) }
+    viewModel { AdminViewModel(get()) }
+    viewModel { MenuViewModel(get(), get(), get(), get()) }
+    viewModel { ProfileViewModel(get(), get(), get(), get()) }
+    viewModel { FeedbackViewModel(get(), get()) }
+    viewModel { AdminFeedbackViewModel(get()) }
     viewModel { AdminMenuViewModel(get()) }
 }

@@ -7,14 +7,17 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navigation
-import com.kshitiz.messmate.LoginScreen
-import com.kshitiz.messmate.ui.auth.CreateAccountScreen
-import com.kshitiz.messmate.ui.auth.LoginDetailsScreen
-import com.kshitiz.messmate.ui.auth.admin.AdminLoginScreen
-import com.kshitiz.messmate.ui.main.AdminPortalScreen
-import com.kshitiz.messmate.ui.main.MainScreen
+import com.kshitiz.messmate.ui.screens.auth.LoginScreen
+import com.kshitiz.messmate.ui.screens.auth.CreateAccountScreen
+import com.kshitiz.messmate.ui.screens.auth.LoginDetailsScreen
+import com.kshitiz.messmate.ui.screens.auth.AdminLoginScreen
+import com.kshitiz.messmate.ui.screens.main.AdminPortalScreen
+import com.kshitiz.messmate.ui.screens.main.MainScreen
 import com.google.firebase.auth.FirebaseAuth
-import com.kshitiz.messmate.ui.main.admin.AdminScannerScreen
+import com.kshitiz.messmate.ui.screens.admin.scanner.AdminScannerScreen
+import com.kshitiz.messmate.ui.screens.admin.menu.AdminMenuScreen
+import com.kshitiz.messmate.ui.screens.feedback.FeedbackScreen
+import com.kshitiz.messmate.ui.screens.admin.feedback.AdminFeedbackScreen
 
 sealed class Screen(val route: String) {
     data object Auth : Screen("auth")
@@ -117,7 +120,7 @@ fun AppNavigation() {
         }
 
         composable(Screen.AdminMenu.route) {
-            com.kshitiz.messmate.ui.main.admin.menu.AdminMenuScreen(
+            AdminMenuScreen(
                 onNavigateBack = { navController.popBackStack() }
             )
         }
@@ -127,14 +130,14 @@ fun AppNavigation() {
             arguments = listOf(androidx.navigation.navArgument("mealType") { type = androidx.navigation.NavType.StringType })
         ) { backStackEntry ->
             val mealType = backStackEntry.arguments?.getString("mealType") ?: "Unknown"
-            com.kshitiz.messmate.ui.main.menu.FeedbackScreen(
+            FeedbackScreen(
                 mealType = mealType,
                 onNavigateBack = { navController.popBackStack() }
             )
         }
 
         composable(Screen.AdminFeedback.route) {
-            com.kshitiz.messmate.ui.main.admin.feedback.AdminFeedbackScreen(
+            AdminFeedbackScreen(
                 onNavigateBack = { navController.popBackStack() }
             )
         }
