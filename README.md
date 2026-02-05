@@ -44,15 +44,31 @@ This project focuses on **real-world problem solving**, clean architecture, and 
 
 ```
 com.kshitiz.messmate
-├── di              # Koin modules
-├── ui
-│   ├── auth        # Login & signup
-│   ├── main        # Student dashboard & menu
-│   ├── admin       # Admin portal & QR scanner
-│   ├── profile     # User profile
-│   └── theme       # Compose theme
-├── util            # Utilities & constants
-└── MessMateApp.kt  # Application entry point
+├───data
+│   ├───model
+│   ├───remote
+│   └───repository
+├───di
+├───domain
+│   ├───model
+│   ├───repository
+│   └───usecase
+├───ui
+│   ├───navigation
+│   ├───screens
+│   │   ├───admin
+│   │   │   ├───feedback
+│   │   │   ├───menu
+│   │   │   └───scanner
+│   │   ├───attendance
+│   │   ├───auth
+│   │   ├───feedback
+│   │   ├───main
+│   │   ├───menu
+│   │   └───profile
+│   ├───theme
+│   └───viewmodel
+└───util
 ```
 
 ---
