@@ -35,7 +35,8 @@ fun AdminLoginScreen(
     var email by rememberSaveable { mutableStateOf("") }
     var password by rememberSaveable { mutableStateOf("") }
 
-    val authState by viewModel.authState.collectAsState()
+    val uiState by viewModel.uiState.collectAsState()
+    val authState = uiState.authState
     val context = LocalContext.current
 
     LaunchedEffect(authState) {
@@ -54,8 +55,7 @@ fun AdminLoginScreen(
     }
 
     Scaffold(
-        // FIX: Force padding for the status bar so it doesn't hide behind camera
-        modifier = Modifier.statusBarsPadding(),
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
         topBar = {
             TopAppBar(
                 title = { Text("Admin Portal") },

@@ -2,14 +2,14 @@ package com.kshitiz.messmate.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.google.firebase.auth.FirebaseUser
+import com.kshitiz.messmate.domain.model.User
 import com.kshitiz.messmate.domain.usecase.*
 import com.kshitiz.messmate.util.Resource
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
 data class AuthUiState(
-    val authState: Resource<FirebaseUser> = Resource.Idle
+    val authState: Resource<User> = Resource.Idle
 )
 
 class AuthViewModel(
@@ -25,9 +25,9 @@ class AuthViewModel(
     )
     val uiState: StateFlow<AuthUiState> = _uiState.asStateFlow()
 
-    // Legacy support
-    val authState: StateFlow<Resource<FirebaseUser>> = _uiState.map { it.authState }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), Resource.Idle)
+    fun getCurrentUser(): User? = getCurrentUserUseCase()
+
+    fun isLoggedIn(): Boolean = getCurrentUserUseCase() != null
 
     fun resetState() {
         _uiState.update { it.copy(authState = Resource.Idle) }
@@ -41,6 +41,11 @@ class AuthViewModel(
     fun login(email: String, password: String) = viewModelScope.launch {
         _uiState.update { it.copy(authState = Resource.Loading) }
         _uiState.update { it.copy(authState = loginUseCase(email, password)) }
+    }
+
+    fun logout() = viewModelScope.launch {
+        logoutUseCase()
+        _uiState.update { it.copy(authState = Resource.Idle) }
     }
 
     fun adminLogin(email: String, password: String) = viewModelScope.launch {

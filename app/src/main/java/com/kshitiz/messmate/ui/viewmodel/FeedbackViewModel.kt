@@ -20,10 +20,6 @@ class FeedbackViewModel(
     private val _uiState = MutableStateFlow(FeedbackUiState())
     val uiState: StateFlow<FeedbackUiState> = _uiState.asStateFlow()
 
-    // Legacy support
-    val submitState: StateFlow<Resource<String>> = _uiState.map { it.submitState }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), Resource.Idle)
-
     fun submitFeedback(mealType: String, rating: Int, comment: String) {
         val email = authRepository.getCurrentUser()?.email ?: "Anonymous"
         

@@ -35,7 +35,8 @@ fun FeedbackScreen(
     viewModel: FeedbackViewModel = koinViewModel()
 ) {
     val context = LocalContext.current
-    val submitState by viewModel.submitState.collectAsState()
+    val feedbackUiState by viewModel.uiState.collectAsState()
+    val submitState = feedbackUiState.submitState
 
     var rating by remember { mutableIntStateOf(0) }
     var comment by remember { mutableStateOf("") }
@@ -77,30 +78,32 @@ fun FeedbackScreen(
                 .padding(horizontal = 16.dp, vertical = 12.dp)
         ) {
             // Back Button
-            IconButton(
-                onClick = onNavigateBack,
-                modifier = Modifier
-                    .background(Color.White.copy(alpha = 0.2f), CircleShape)
+            Row(
+                modifier = Modifier.padding(top = 25.dp)
             ) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = "Back",
-                    tint = MaterialTheme.colorScheme.onPrimary
+                IconButton(
+                    onClick = onNavigateBack,
+                    modifier = Modifier
+                        .background(Color.White.copy(alpha = 0.2f), CircleShape)
+                ) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = "Back",
+                        tint = MaterialTheme.colorScheme.onPrimary
+                    )
+                }
+                Spacer(modifier = Modifier.width(16.dp))
+                // Refined Title: Single line, elegant weight
+                Text(
+                    text = "Rate your $mealType",
+                    style = MaterialTheme.typography.headlineLarge, // Smaller than display
+                    color = MaterialTheme.colorScheme.onPrimary,
+                    fontWeight = FontWeight.SemiBold, // Less bold than before
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.padding(start = 8.dp)
                 )
             }
-
-            Spacer(modifier = Modifier.height(32.dp))
-
-            // Refined Title: Single line, elegant weight
-            Text(
-                text = "Rate your $mealType",
-                style = MaterialTheme.typography.headlineLarge, // Smaller than display
-                color = MaterialTheme.colorScheme.onPrimary,
-                fontWeight = FontWeight.SemiBold, // Less bold than before
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.padding(start = 8.dp)
-            )
         }
 
         // --- 2. Content Sheet ---
@@ -186,9 +189,29 @@ fun FeedbackScreen(
 
             Spacer(modifier = Modifier.weight(1f))
 
+            // --- Submit Confirmation Dialog ---
+            var showSubmitDialog by remember { mutableStateOf(false) }
+
+            if (showSubmitDialog) {
+                AlertDialog(
+                    onDismissRequest = { showSubmitDialog = false },
+                    title = { Text("Submit Review") },
+                    text = { Text("Are you sure you want to submit your review?") },
+                    confirmButton = {
+                        TextButton(onClick = {
+                            showSubmitDialog = false
+                            viewModel.submitFeedback(mealType, rating, comment)
+                        }) { Text("Yes") }
+                    },
+                    dismissButton = {
+                        TextButton(onClick = { showSubmitDialog = false }) { Text("No") }
+                    }
+                )
+            }
+
             // --- Submit Button ---
             Button(
-                onClick = { viewModel.submitFeedback(mealType, rating, comment) },
+                onClick = { showSubmitDialog = true },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp),

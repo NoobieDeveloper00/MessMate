@@ -4,6 +4,7 @@ import android.net.Uri
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.SetOptions
 import com.google.firebase.storage.FirebaseStorage
+import com.kshitiz.messmate.data.FirestoreConstants
 import com.kshitiz.messmate.domain.model.User
 import com.kshitiz.messmate.domain.repository.ProfileRepository
 import com.kshitiz.messmate.util.Resource
@@ -19,7 +20,7 @@ class ProfileRepositoryImpl(
 
     override fun getProfile(email: String): Flow<Resource<User>> = callbackFlow {
         trySend(Resource.Loading)
-        val subscription = firestore.collection("users").document(email)
+        val subscription = firestore.collection(FirestoreConstants.COLLECTION_USERS).document(email)
             .addSnapshotListener { snapshot, error ->
                 if (error != null) {
                     trySend(Resource.Error(error.message ?: "Error fetching profile"))
@@ -48,7 +49,7 @@ class ProfileRepositoryImpl(
                 "name" to user.name,
                 "favouriteMeal" to user.favouriteMeal
             )
-            firestore.collection("users").document(user.email)
+            firestore.collection(FirestoreConstants.COLLECTION_USERS).document(user.email)
                 .set(data, SetOptions.merge())
                 .await()
             Resource.Success(Unit)
@@ -64,7 +65,7 @@ class ProfileRepositoryImpl(
             val downloadUri = ref.downloadUrl.await()
             val url = downloadUri.toString()
             
-            firestore.collection("users").document(email)
+            firestore.collection(FirestoreConstants.COLLECTION_USERS).document(email)
                 .set(mapOf("photoUrl" to url), SetOptions.merge())
                 .await()
             

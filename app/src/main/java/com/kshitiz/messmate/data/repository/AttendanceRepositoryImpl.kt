@@ -2,6 +2,7 @@ package com.kshitiz.messmate.data.repository
 
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.SetOptions
+import com.kshitiz.messmate.data.FirestoreConstants
 import com.kshitiz.messmate.domain.model.UserAttendance
 import com.kshitiz.messmate.domain.repository.AttendanceRepository
 import com.kshitiz.messmate.util.Resource
@@ -16,9 +17,9 @@ class AttendanceRepositoryImpl(
 
     override fun getUserAttendance(email: String, date: String): Flow<Resource<UserAttendance>> = callbackFlow {
         trySend(Resource.Loading)
-        val subscription = firestore.collection("users")
+        val subscription = firestore.collection(FirestoreConstants.COLLECTION_USERS)
             .document(email)
-            .collection("attendance")
+            .collection(FirestoreConstants.SUBCOLLECTION_ATTENDANCE)
             .document(date)
             .addSnapshotListener { snapshot, error ->
                 if (error != null) {
@@ -48,9 +49,9 @@ class AttendanceRepositoryImpl(
     override suspend fun markAttendance(email: String, date: String, mealType: String): Resource<Unit> {
         return try {
             val mealKey = mealType.lowercase()
-            val docRef = firestore.collection("users")
+            val docRef = firestore.collection(FirestoreConstants.COLLECTION_USERS)
                 .document(email)
-                .collection("attendance")
+                .collection(FirestoreConstants.SUBCOLLECTION_ATTENDANCE)
                 .document(date)
 
             val snapshot = docRef.get().await()
@@ -71,9 +72,9 @@ class AttendanceRepositoryImpl(
     override suspend fun optOutMeal(email: String, date: String, mealType: String): Resource<Unit> {
         return try {
             val optOutKey = "${mealType.lowercase()}_optout"
-            firestore.collection("users")
+            firestore.collection(FirestoreConstants.COLLECTION_USERS)
                 .document(email)
-                .collection("attendance")
+                .collection(FirestoreConstants.SUBCOLLECTION_ATTENDANCE)
                 .document(date)
                 .set(mapOf(optOutKey to true), SetOptions.merge())
                 .await()

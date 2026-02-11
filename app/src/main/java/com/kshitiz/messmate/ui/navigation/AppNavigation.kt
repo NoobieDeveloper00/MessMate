@@ -13,11 +13,12 @@ import com.kshitiz.messmate.ui.screens.auth.LoginDetailsScreen
 import com.kshitiz.messmate.ui.screens.auth.AdminLoginScreen
 import com.kshitiz.messmate.ui.screens.main.AdminPortalScreen
 import com.kshitiz.messmate.ui.screens.main.MainScreen
-import com.google.firebase.auth.FirebaseAuth
 import com.kshitiz.messmate.ui.screens.admin.scanner.AdminScannerScreen
 import com.kshitiz.messmate.ui.screens.admin.menu.AdminMenuScreen
 import com.kshitiz.messmate.ui.screens.feedback.FeedbackScreen
 import com.kshitiz.messmate.ui.screens.admin.feedback.AdminFeedbackScreen
+import com.kshitiz.messmate.ui.viewmodel.AuthViewModel
+import org.koin.androidx.compose.koinViewModel
 
 sealed class Screen(val route: String) {
     data object Auth : Screen("auth")
@@ -36,8 +37,8 @@ sealed class Screen(val route: String) {
 @Composable
 fun AppNavigation() {
     val navController = rememberNavController()
-    val firebaseAuth: FirebaseAuth = FirebaseAuth.getInstance()
-    val startDest = if (firebaseAuth.currentUser != null) Screen.Main.route else Screen.Auth.route
+    val authViewModel: AuthViewModel = koinViewModel()
+    val startDest = if (authViewModel.isLoggedIn()) Screen.Main.route else Screen.Auth.route
 
     NavHost(navController = navController, startDestination = startDest) {
 
@@ -90,8 +91,7 @@ fun AppNavigation() {
                     navController.navigate("feedback/$mealType")
                 },
                 onLogout = {
-                    // Actual Logout Logic
-                    FirebaseAuth.getInstance().signOut()
+                    authViewModel.logout()
 
                     // Navigate back to Login and clear stack
                     navController.navigate(Screen.Auth.route) {
@@ -105,7 +105,7 @@ fun AppNavigation() {
         composable(route = Screen.AdminPortal.route) {
             AdminPortalScreen(
                 onLogout = {
-                    FirebaseAuth.getInstance().signOut()
+                    authViewModel.logout()
                     navController.navigate(Screen.Auth.route) { popUpTo(0) { inclusive = true } }
                 },
                 onNavigateToScanner = { navController.navigate(Screen.AdminScanner.route) },

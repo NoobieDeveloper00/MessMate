@@ -6,6 +6,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -23,20 +25,8 @@ import androidx.compose.material.icons.outlined.Feedback
 import androidx.compose.material.icons.outlined.LunchDining
 import androidx.compose.material.icons.outlined.ThumbDownOffAlt
 import androidx.compose.material.icons.outlined.WbSunny
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -59,9 +49,10 @@ fun MealMenuScreen(
     viewModel: MenuViewModel = koinViewModel()
 ) {
     val context = LocalContext.current
-    val optOutState by viewModel.optOutState.collectAsState()
-    val optedOutMeals by viewModel.optedOutMeals.collectAsState()
-    val dailyMenu by viewModel.dailyMenu.collectAsState()
+    val uiState by viewModel.uiState.collectAsState()
+    val optOutState = uiState.optOutState
+    val optedOutMeals = uiState.optedOutMeals
+    val dailyMenu = uiState.dailyMenu
     val mealKey = mealType.lowercase(Locale.ENGLISH)
 
     LaunchedEffect(optOutState) {
@@ -97,7 +88,8 @@ fun MealMenuScreen(
     )
 
     Scaffold(
-        containerColor = MaterialTheme.colorScheme.background
+        containerColor = MaterialTheme.colorScheme.background,
+        contentWindowInsets = WindowInsets(0, 0, 0, 0)
     ) { padding ->
         Box(
             modifier = Modifier
@@ -111,6 +103,7 @@ fun MealMenuScreen(
             Column(
                 modifier = Modifier
                     .fillMaxSize()
+                    .statusBarsPadding()
                     .padding(24.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
@@ -233,8 +226,27 @@ fun MealMenuScreen(
                             Text("Skipped")
                         }
                     } else {
+                        var showSkipDialog by remember { mutableStateOf(false) }
+
+                        if (showSkipDialog) {
+                            AlertDialog(
+                                onDismissRequest = { showSkipDialog = false },
+                                title = { Text("Skip Meal") },
+                                text = { Text("Are you sure you want to skip ${mealType.replaceFirstChar { it.titlecase() }}?") },
+                                confirmButton = {
+                                    TextButton(onClick = {
+                                        showSkipDialog = false
+                                        viewModel.optOutFromMeal(mealType)
+                                    }) { Text("Yes") }
+                                },
+                                dismissButton = {
+                                    TextButton(onClick = { showSkipDialog = false }) { Text("No") }
+                                }
+                            )
+                        }
+
                         OutlinedButton(
-                            onClick = { viewModel.optOutFromMeal(mealType) },
+                            onClick = { showSkipDialog = true },
                             modifier = Modifier
                                 .weight(1f)
                                 .height(56.dp),

@@ -56,7 +56,8 @@ fun AdminScannerScreen(
 
         var selectedMeal by remember { mutableStateOf("Breakfast") }
         val canScan = remember { mutableStateOf(true) }
-        val scanState by viewModel.scanState.collectAsState()
+        val adminUiState by viewModel.uiState.collectAsState()
+        val scanState = adminUiState.scanState
 
         LaunchedEffect(scanState) {
             when (scanState) {

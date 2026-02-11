@@ -18,10 +18,6 @@ class AdminViewModel(
     private val _uiState = MutableStateFlow(AdminUiState())
     val uiState: StateFlow<AdminUiState> = _uiState.asStateFlow()
 
-    // Legacy support
-    val scanState: StateFlow<Resource<String>> = _uiState.map { it.scanState }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), Resource.Idle)
-
     fun resetState() {
         _uiState.update { it.copy(scanState = Resource.Idle) }
     }

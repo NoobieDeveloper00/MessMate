@@ -33,7 +33,8 @@ fun LoginDetailsScreen(
     var email by rememberSaveable { mutableStateOf("") }
     var password by rememberSaveable { mutableStateOf("") }
 
-    val authState by viewModel.authState.collectAsState()
+    val uiState by viewModel.uiState.collectAsState()
+    val authState = uiState.authState
     val context = LocalContext.current
 
     // Observe Authentication State
@@ -63,7 +64,8 @@ fun LoginDetailsScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .fillMaxHeight(0.4f)
-                .background(MaterialTheme.colorScheme.primary),
+                .background(MaterialTheme.colorScheme.primary)
+                .statusBarsPadding(),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {

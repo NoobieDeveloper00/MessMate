@@ -2,6 +2,7 @@ package com.kshitiz.messmate.data.repository
 
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
+import com.kshitiz.messmate.data.FirestoreConstants
 import com.kshitiz.messmate.domain.model.FeedbackItem
 import com.kshitiz.messmate.domain.model.FeedbackSummary
 import com.kshitiz.messmate.domain.repository.FeedbackRepository
@@ -29,7 +30,7 @@ class FeedbackRepositoryImpl(
                     else -> "Neutral"
                 }
             )
-            firestore.collection("feedback")
+            firestore.collection(FirestoreConstants.COLLECTION_FEEDBACK)
                 .add(feedbackData)
                 .await()
             Resource.Success(Unit)
@@ -40,7 +41,7 @@ class FeedbackRepositoryImpl(
 
     override fun getFeedbackSummary(mealType: String): Flow<Resource<FeedbackSummary>> = callbackFlow {
         trySend(Resource.Loading)
-        val subscription = firestore.collection("feedback")
+        val subscription = firestore.collection(FirestoreConstants.COLLECTION_FEEDBACK)
             .whereEqualTo("mealType", mealType)
             .addSnapshotListener { snapshot, error ->
                 if (error != null) {

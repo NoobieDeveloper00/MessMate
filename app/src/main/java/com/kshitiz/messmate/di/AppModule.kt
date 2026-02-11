@@ -10,20 +10,21 @@ import com.kshitiz.messmate.ui.viewmodel.*
 import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
 
-val appModule = module {
-    // Provide Firebase instances
+val firebaseModule = module {
     single { FirebaseAuth.getInstance() }
     single { FirebaseFirestore.getInstance() }
     single { FirebaseStorage.getInstance() }
+}
 
-    // Repositories
+val repositoryModule = module {
     single<AuthRepository> { AuthRepositoryImpl(get(), get()) }
     single<ProfileRepository> { ProfileRepositoryImpl(get(), get()) }
     single<MenuRepository> { MenuRepositoryImpl(get()) }
     single<AttendanceRepository> { AttendanceRepositoryImpl(get()) }
     single<FeedbackRepository> { FeedbackRepositoryImpl(get()) }
+}
 
-    // Use Cases
+val useCaseModule = module {
     factory { LoginUseCase(get()) }
     factory { SignupUseCase(get()) }
     factory { GetProfileUseCase(get()) }
@@ -37,8 +38,9 @@ val appModule = module {
     factory { IsAdminUseCase(get()) }
     factory { LogoutUseCase(get()) }
     factory { GetCurrentUserUseCase(get()) }
+}
 
-    // ViewModels
+val viewModelModule = module {
     viewModel { AuthViewModel(get(), get(), get(), get(), get()) }
     viewModel { AdminViewModel(get()) }
     viewModel { MenuViewModel(get(), get(), get(), get()) }
@@ -47,3 +49,5 @@ val appModule = module {
     viewModel { AdminFeedbackViewModel(get()) }
     viewModel { AdminMenuViewModel(get()) }
 }
+
+val appModule = listOf(firebaseModule, repositoryModule, useCaseModule, viewModelModule)

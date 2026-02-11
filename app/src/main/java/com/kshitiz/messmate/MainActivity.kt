@@ -21,10 +21,10 @@ class MainActivity : ComponentActivity() {
 
         enableEdgeToEdge()
         // Configure system bar icon appearance to ensure content shows through
-        val insetsController = WindowInsetsControllerCompat(window, window.decorView)
-        // Use dark icons only when background is light; our top area is primary color, so prefer light icons
-        insetsController.isAppearanceLightStatusBars = false
-        insetsController.isAppearanceLightNavigationBars = false
+//        val insetsController = WindowInsetsControllerCompat(window, window.decorView)
+//        // Use dark icons only when background is light; our top area is primary color, so prefer light icons
+//        insetsController.isAppearanceLightStatusBars = false
+//        insetsController.isAppearanceLightNavigationBars = false
 
         setContent {
             MessMateTheme {

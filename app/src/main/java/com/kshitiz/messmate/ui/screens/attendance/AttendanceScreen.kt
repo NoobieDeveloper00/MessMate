@@ -34,11 +34,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.google.firebase.auth.FirebaseAuth
+import com.kshitiz.messmate.ui.viewmodel.AuthViewModel
+import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun AttendanceScreen() {
-    val email = FirebaseAuth.getInstance().currentUser?.email
+    val authViewModel: AuthViewModel = koinViewModel()
+    val email = authViewModel.getCurrentUser()?.email
 
     // Generate QR bitmap once for the current email
     val qrBitmap = remember(email) {
@@ -59,14 +61,15 @@ fun AttendanceScreen() {
             fontSize = 40.sp,
             modifier = Modifier
                 .align(Alignment.TopCenter)
-                .padding(top = 40.dp)
+                .statusBarsPadding()
+                .padding(top = 16.dp)
         )
 
         // Content sheet
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(top = 120.dp)
+                .padding(top = 140.dp)
                 .clip(RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp))
                 .background(MaterialTheme.colorScheme.surface)
                 .padding(horizontal = 24.dp),

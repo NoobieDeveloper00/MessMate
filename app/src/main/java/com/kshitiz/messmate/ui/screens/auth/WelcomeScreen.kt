@@ -1,8 +1,5 @@
 package com.kshitiz.messmate.ui.screens.auth
 
-import com.kshitiz.messmate.ui.viewmodel.AuthViewModel
-import com.kshitiz.messmate.util.Resource
-
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*

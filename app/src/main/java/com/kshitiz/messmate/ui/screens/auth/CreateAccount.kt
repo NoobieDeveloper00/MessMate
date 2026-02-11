@@ -3,7 +3,7 @@ package com.kshitiz.messmate.ui.screens.auth
 import com.kshitiz.messmate.ui.viewmodel.AuthViewModel
 import com.kshitiz.messmate.util.Resource
 
-import android.util.Patterns
+
 import android.widget.Toast
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -38,7 +38,8 @@ fun CreateAccountScreen(
     var password by rememberSaveable { mutableStateOf("") }
     var confirmPassword by rememberSaveable { mutableStateOf("") }
 
-    val authState by viewModel.authState.collectAsState()
+    val uiState by viewModel.uiState.collectAsState()
+    val authState = uiState.authState
     val context = LocalContext.current
 
     // Observe State Changes
@@ -59,6 +60,7 @@ fun CreateAccountScreen(
     }
 
     Scaffold(
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
         topBar = {
             TopAppBar(
                 title = { Text("Create Account") },
@@ -141,7 +143,7 @@ fun CreateAccountScreen(
             Spacer(modifier = Modifier.height(32.dp))
 
             // Form validity
-            val isEmailValid = remember(email) { Patterns.EMAIL_ADDRESS.matcher(email).matches() }
+            val isEmailValid = remember(email) { Regex("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$").matches(email) }
             val isFormValid = name.isNotBlank() && isEmailValid && password.length >= 6 && password == confirmPassword
 
             // Register Button with Loading State

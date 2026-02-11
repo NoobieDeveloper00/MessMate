@@ -75,8 +75,10 @@ fun MenuScreen(
     val currentDate = LocalDate.now()
     val formattedDate = currentDate.format(DateTimeFormatter.ofPattern("EEEE, d MMM", Locale.ENGLISH))
 
-    val profileState by profileViewModel.profileState.collectAsState()
-    val dailyMenu by viewModel.dailyMenu.collectAsState()
+    val profileUiState by profileViewModel.uiState.collectAsState()
+    val profileState = profileUiState.profileState
+    val menuUiState by viewModel.uiState.collectAsState()
+    val dailyMenu = menuUiState.dailyMenu
 
     // User Profile & Crash Fix
     val profile = (profileState as? com.kshitiz.messmate.util.Resource.Success<User>)?.data
@@ -96,6 +98,7 @@ fun MenuScreen(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
+                .statusBarsPadding()
                 .padding(horizontal = 24.dp, vertical = 24.dp)
         ) {
             Row(

@@ -26,10 +26,6 @@ class ProfileViewModel(
     private val _uiState = MutableStateFlow(ProfileUiState())
     val uiState: StateFlow<ProfileUiState> = _uiState.asStateFlow()
 
-    // Legacy support
-    val profileState: StateFlow<Resource<User>> = _uiState.map { it.profileState }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), Resource.Loading)
-
     init {
         loadProfile()
     }

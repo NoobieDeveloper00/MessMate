@@ -31,15 +31,15 @@ fun AdminMenuScreen(
     viewModel: AdminMenuViewModel = koinViewModel()
 ) {
     MessMateTheme(darkTheme = true) {
-        val menuState by viewModel.menuState.collectAsState()
-        val selectedDay by viewModel.selectedDay.collectAsState()
+        val adminMenuUiState by viewModel.uiState.collectAsState()
+        val menuState = adminMenuUiState.menuState
+        val selectedDay = adminMenuUiState.selectedDay
         val days = listOf("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday")
         val mealTypes = listOf("Breakfast", "Lunch", "Snacks", "Dinner")
 
         Scaffold(
             containerColor = MaterialTheme.colorScheme.background,
-            // FIX: Handle Notch
-            contentWindowInsets = WindowInsets.statusBars,
+            contentWindowInsets = WindowInsets(0, 0, 0, 0),
             topBar = {
                 TopAppBar(
                     title = {

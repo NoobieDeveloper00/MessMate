@@ -30,7 +30,8 @@ fun ProfileScreen(
     viewModel: ProfileViewModel = koinViewModel()
 ) {
     val context = LocalContext.current
-    val state by viewModel.profileState.collectAsState()
+    val profileUiState by viewModel.uiState.collectAsState()
+    val state = profileUiState.profileState
 
     val editableName = remember { mutableStateOf("") }
     val editableFav = remember { mutableStateOf("") }
@@ -79,14 +80,15 @@ fun ProfileScreen(
             fontSize = 40.sp,             // Matches Attendance/Menu size
             modifier = Modifier
                 .align(Alignment.TopCenter)
-                .padding(top = 40.dp)     // Consistent top padding
+                .statusBarsPadding()
+                .padding(top = 16.dp)     // Consistent top padding
         )
 
         // --- 2. Content Sheet (Matched Height) ---
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(top = 120.dp) // Consistent sheet start height
+                .padding(top = 140.dp) // Consistent sheet start height
                 .clip(RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp))
                 .background(MaterialTheme.colorScheme.background)
                 .verticalScroll(rememberScrollState())
@@ -118,9 +120,29 @@ fun ProfileScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
+            // --- Logout Confirmation Dialog ---
+            var showLogoutDialog by remember { mutableStateOf(false) }
+
+            if (showLogoutDialog) {
+                AlertDialog(
+                    onDismissRequest = { showLogoutDialog = false },
+                    title = { Text("Log Out") },
+                    text = { Text("Are you sure you want to log out?") },
+                    confirmButton = {
+                        TextButton(onClick = {
+                            showLogoutDialog = false
+                            onLogout()
+                        }) { Text("Yes") }
+                    },
+                    dismissButton = {
+                        TextButton(onClick = { showLogoutDialog = false }) { Text("No") }
+                    }
+                )
+            }
+
             // --- Logout Button ---
             OutlinedButton(
-                onClick = onLogout,
+                onClick = { showLogoutDialog = true },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(50.dp),

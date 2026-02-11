@@ -29,18 +29,6 @@ class MenuViewModel(
     private val _uiState = MutableStateFlow(MenuUiState())
     val uiState: StateFlow<MenuUiState> = _uiState.asStateFlow()
 
-    // Keep these for backward compatibility if needed, or migration phase
-    // but better to refactor the UI too. 
-    // Actually, I'll refactor the UI to use uiState.
-    
-    // Legacy support for current UI
-    val optOutState: StateFlow<Resource<String>> = _uiState.map { it.optOutState }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), Resource.Idle)
-    val optedOutMeals: StateFlow<Set<String>> = _uiState.map { it.optedOutMeals }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptySet())
-    val dailyMenu: StateFlow<Map<String, List<String>>> = _uiState.map { it.dailyMenu }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyMap())
-
     init {
         fetchDailyMenu()
         observeAttendance()

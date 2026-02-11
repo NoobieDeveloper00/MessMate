@@ -18,10 +18,6 @@ class AdminFeedbackViewModel(
     private val _uiState = MutableStateFlow(AdminFeedbackUiState())
     val uiState: StateFlow<AdminFeedbackUiState> = _uiState.asStateFlow()
 
-    // Legacy support
-    val summaryState: StateFlow<Resource<FeedbackSummary>> = _uiState.map { it.summaryState }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), Resource.Loading)
-
     init {
         loadFeedback("Breakfast")
     }

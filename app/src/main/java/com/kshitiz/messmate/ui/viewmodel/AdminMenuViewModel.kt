@@ -23,12 +23,6 @@ class AdminMenuViewModel(
     private val _uiState = MutableStateFlow(AdminMenuUiState(selectedDay = getCurrentDay()))
     val uiState: StateFlow<AdminMenuUiState> = _uiState.asStateFlow()
 
-    // Legacy support
-    val menuState: StateFlow<Resource<Map<String, List<String>>>> = _uiState.map { it.menuState }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), Resource.Loading)
-    val selectedDay: StateFlow<String> = _uiState.map { it.selectedDay }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), getCurrentDay())
-
     init {
         loadMenu(_uiState.value.selectedDay)
     }

@@ -31,14 +31,14 @@ fun AdminFeedbackScreen(
     viewModel: AdminFeedbackViewModel = koinViewModel()
 ) {
     MessMateTheme(darkTheme = true) {
-        val state by viewModel.summaryState.collectAsState()
+        val adminFeedbackUiState by viewModel.uiState.collectAsState()
+        val state = adminFeedbackUiState.summaryState
         var selectedMeal by remember { mutableStateOf("Breakfast") }
         val meals = listOf("Breakfast", "Lunch", "Snacks", "Dinner")
 
         Scaffold(
             containerColor = MaterialTheme.colorScheme.background,
-            // FIX: Manual padding to avoid notch
-            modifier = Modifier.statusBarsPadding(),
+            contentWindowInsets = WindowInsets(0, 0, 0, 0),
             topBar = {
                 TopAppBar(
                     title = {
