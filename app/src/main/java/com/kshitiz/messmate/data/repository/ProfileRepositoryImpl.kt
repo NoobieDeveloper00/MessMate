@@ -8,10 +8,13 @@ import com.kshitiz.messmate.data.FirestoreConstants
 import com.kshitiz.messmate.domain.model.User
 import com.kshitiz.messmate.domain.repository.ProfileRepository
 import com.kshitiz.messmate.util.Resource
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.withContext
 
 class ProfileRepositoryImpl(
     private val firestore: FirebaseFirestore,
@@ -41,10 +44,10 @@ class ProfileRepositoryImpl(
                 }
             }
         awaitClose { subscription.remove() }
-    }
+    }.flowOn(Dispatchers.IO)
 
-    override suspend fun saveProfile(user: User): Resource<Unit> {
-        return try {
+    override suspend fun saveProfile(user: User): Resource<Unit> = withContext(Dispatchers.IO) {
+        try {
             val data = mapOf(
                 "name" to user.name,
                 "favouriteMeal" to user.favouriteMeal
@@ -58,8 +61,8 @@ class ProfileRepositoryImpl(
         }
     }
 
-    override suspend fun uploadProfilePicture(email: String, uri: Uri): Resource<String> {
-        return try {
+    override suspend fun uploadProfilePicture(email: String, uri: Uri): Resource<String> = withContext(Dispatchers.IO) {
+        try {
             val ref = storage.reference.child("profile_photos/${email.replace('/', '_')}.jpg")
             ref.putFile(uri).await()
             val downloadUri = ref.downloadUrl.await()

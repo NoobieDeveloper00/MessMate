@@ -6,15 +6,17 @@ import com.kshitiz.messmate.data.FirestoreConstants
 import com.kshitiz.messmate.domain.model.User
 import com.kshitiz.messmate.domain.repository.AuthRepository
 import com.kshitiz.messmate.util.Resource
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.withContext
 
 class AuthRepositoryImpl(
     private val firebaseAuth: FirebaseAuth,
     private val firestore: FirebaseFirestore
 ) : AuthRepository {
 
-    override suspend fun login(email: String, password: String): Resource<User> {
-        return try {
+    override suspend fun login(email: String, password: String): Resource<User> = withContext(Dispatchers.IO) {
+        try {
             val result = firebaseAuth.signInWithEmailAndPassword(email, password).await()
             val firebaseUser = result.user!!
             Resource.Success(
@@ -29,8 +31,8 @@ class AuthRepositoryImpl(
         }
     }
 
-    override suspend fun signup(name: String, email: String, password: String): Resource<User> {
-        return try {
+    override suspend fun signup(name: String, email: String, password: String): Resource<User> = withContext(Dispatchers.IO) {
+        try {
             val result = firebaseAuth.createUserWithEmailAndPassword(email, password).await()
             val firebaseUser = result.user!!
             
@@ -56,7 +58,7 @@ class AuthRepositoryImpl(
         }
     }
 
-    override suspend fun logout() {
+    override suspend fun logout() = withContext(Dispatchers.IO) {
         firebaseAuth.signOut()
     }
 
@@ -69,8 +71,8 @@ class AuthRepositoryImpl(
         )
     }
 
-    override suspend fun isAdmin(email: String): Boolean {
-        return try {
+    override suspend fun isAdmin(email: String): Boolean = withContext(Dispatchers.IO) {
+        try {
             val snapshot = firestore.collection(FirestoreConstants.COLLECTION_ADMINS)
                 .whereEqualTo("email", email)
                 .limit(1)

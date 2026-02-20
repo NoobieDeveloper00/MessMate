@@ -7,5 +7,6 @@ import kotlinx.coroutines.flow.Flow
 
 interface FeedbackRepository {
     suspend fun submitFeedback(mealType: String, feedback: FeedbackItem): Resource<Unit>
-    fun getFeedbackSummary(mealType: String): Flow<Resource<FeedbackSummary>>
+    fun getFeedbackSummary(mealType: String, date: String): Flow<Resource<FeedbackSummary>>
+    suspend fun deleteOldFeedback(): Resource<Unit>
 }

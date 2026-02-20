@@ -5,10 +5,13 @@ import com.kshitiz.messmate.data.FirestoreConstants
 import com.kshitiz.messmate.domain.model.DailyMenu
 import com.kshitiz.messmate.domain.repository.MenuRepository
 import com.kshitiz.messmate.util.Resource
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.withContext
 import java.util.Locale
 
 class MenuRepositoryImpl(
@@ -51,10 +54,10 @@ class MenuRepositoryImpl(
             }
         
         awaitClose { subscription.remove() }
-    }
+    }.flowOn(Dispatchers.IO)
 
-    override suspend fun updateMenu(day: String, menu: DailyMenu): Resource<Unit> {
-        return try {
+    override suspend fun updateMenu(day: String, menu: DailyMenu): Resource<Unit> = withContext(Dispatchers.IO) {
+        try {
             val dayTitle = day.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }
             val data = mapOf(
                 "breakfast" to menu.breakfast,

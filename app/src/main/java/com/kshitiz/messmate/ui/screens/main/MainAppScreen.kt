@@ -8,10 +8,14 @@ import com.kshitiz.messmate.ui.screens.feedback.FeedbackScreen
 
 import android.os.Build
 import androidx.annotation.RequiresApi
+import androidx.lifecycle.Lifecycle
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
@@ -29,7 +33,9 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -57,9 +63,15 @@ fun MainScreen(
 ) {
     val navController = rememberNavController()
     val navItems = listOf(
-        MainScreenRoutes.Menu,
         MainScreenRoutes.Attendance,
+        MainScreenRoutes.Menu,
         MainScreenRoutes.Profile
+    )
+
+    val routeIndex = mapOf(
+        MainScreenRoutes.Attendance.route to 0,
+        MainScreenRoutes.Menu.route to 1,
+        MainScreenRoutes.Profile.route to 2
     )
 
     Box(modifier = Modifier.fillMaxSize()) {
@@ -71,7 +83,39 @@ fun MainScreen(
             NavHost(
                 navController = navController,
                 startDestination = MainScreenRoutes.Menu.route,
-                modifier = Modifier.padding(innerPadding)
+                modifier = Modifier.padding(innerPadding),
+                enterTransition = {
+                    val from = routeIndex[initialState.destination.route] ?: 1
+                    val to = routeIndex[targetState.destination.route] ?: 1
+                    slideInHorizontally(
+                        initialOffsetX = { fullWidth -> if (to >= from) fullWidth else -fullWidth },
+                        animationSpec = tween(300)
+                    )
+                },
+                exitTransition = {
+                    val from = routeIndex[initialState.destination.route] ?: 1
+                    val to = routeIndex[targetState.destination.route] ?: 1
+                    slideOutHorizontally(
+                        targetOffsetX = { fullWidth -> if (to >= from) -fullWidth else fullWidth },
+                        animationSpec = tween(300)
+                    )
+                },
+                popEnterTransition = {
+                    val from = routeIndex[initialState.destination.route] ?: 1
+                    val to = routeIndex[targetState.destination.route] ?: 1
+                    slideInHorizontally(
+                        initialOffsetX = { fullWidth -> if (to >= from) fullWidth else -fullWidth },
+                        animationSpec = tween(300)
+                    )
+                },
+                popExitTransition = {
+                    val from = routeIndex[initialState.destination.route] ?: 1
+                    val to = routeIndex[targetState.destination.route] ?: 1
+                    slideOutHorizontally(
+                        targetOffsetX = { fullWidth -> if (to >= from) -fullWidth else fullWidth },
+                        animationSpec = tween(300)
+                    )
+                }
             ) {
                 composable(MainScreenRoutes.Menu.route) {
                     MenuScreen(onMealCardClick = { mealType ->
@@ -81,7 +125,31 @@ fun MainScreen(
 
                 composable(
                     route = "meal_menu/{mealType}",
-                    arguments = listOf(navArgument("mealType") { type = NavType.StringType })
+                    arguments = listOf(navArgument("mealType") { type = NavType.StringType }),
+                    enterTransition = {
+                        slideInHorizontally(
+                            initialOffsetX = { fullWidth -> fullWidth },
+                            animationSpec = tween(300)
+                        )
+                    },
+                    exitTransition = {
+                        slideOutHorizontally(
+                            targetOffsetX = { fullWidth -> fullWidth },
+                            animationSpec = tween(300)
+                        )
+                    },
+                    popEnterTransition = {
+                        slideInHorizontally(
+                            initialOffsetX = { fullWidth -> -fullWidth },
+                            animationSpec = tween(300)
+                        )
+                    },
+                    popExitTransition = {
+                        slideOutHorizontally(
+                            targetOffsetX = { fullWidth -> fullWidth },
+                            animationSpec = tween(300)
+                        )
+                    }
                 ) { backStackEntry ->
                     val mealType = backStackEntry.arguments?.getString("mealType") ?: "Unknown"
                     MealMenuScreen(
@@ -105,10 +173,13 @@ fun MainScreen(
                 items = navItems,
                 currentRoute = currentRoute,
                 onItemClick = { route ->
-                    navController.navigate(route) {
-                        popUpTo(navController.graph.findStartDestination().id) { saveState = true }
-                        launchSingleTop = true
-                        restoreState = true
+                    val currentEntry = navController.currentBackStackEntry
+                    if (currentEntry?.lifecycle?.currentState == Lifecycle.State.RESUMED) {
+                        navController.navigate(route) {
+                            popUpTo(navController.graph.findStartDestination().id) { saveState = true }
+                            launchSingleTop = true
+                            restoreState = true
+                        }
                     }
                 },
                 modifier = Modifier.align(Alignment.BottomCenter)
@@ -128,10 +199,15 @@ fun LabeledBottomDock(
     val inactiveColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
     val dockColor = MaterialTheme.colorScheme.surface
 
+    val navBarInsets = WindowInsets.navigationBars
+    val density = LocalDensity.current
+    val navBarBottomPadding = with(density) { navBarInsets.getBottom(this).toDp() }
+
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .height(100.dp) // Total height reserved for the dock + popups
+            .height(100.dp + navBarBottomPadding)
+            .padding(bottom = navBarBottomPadding)
     ) {
         // --- 1. Background Bar ---
         Surface(
@@ -178,20 +254,49 @@ fun LabeledBottomDock(
             items.forEach { item ->
                 val isSelected = currentRoute == item.route
 
+                val smoothSpring = spring<Dp>(
+                    dampingRatio = Spring.DampingRatioMediumBouncy,
+                    stiffness = Spring.StiffnessLow
+                )
+
                 // Animation: Pop Up
                 val offsetY by animateDpAsState(
                     targetValue = if (isSelected) (-20).dp else 0.dp,
-                    animationSpec = spring(dampingRatio = Spring.DampingRatioLowBouncy),
+                    animationSpec = smoothSpring,
                     label = "jump"
                 )
 
                 // Animation: Scale Up
                 val scale by animateFloatAsState(
                     targetValue = if (isSelected) 1.1f else 1.0f,
+                    animationSpec = spring(
+                        dampingRatio = Spring.DampingRatioMediumBouncy,
+                        stiffness = Spring.StiffnessLow
+                    ),
                     label = "scale"
                 )
 
-                // 2. BIGGER Pop-Up Circle (64dp)
+                // Animation: Circle size
+                val circleSize by animateDpAsState(
+                    targetValue = if (isSelected) 64.dp else 48.dp,
+                    animationSpec = smoothSpring,
+                    label = "circleSize"
+                )
+
+                // Animation: Icon size
+                val iconSize by animateDpAsState(
+                    targetValue = if (isSelected) 32.dp else 28.dp,
+                    animationSpec = smoothSpring,
+                    label = "iconSize"
+                )
+
+                // Animation: Shadow elevation
+                val shadowElevation by animateDpAsState(
+                    targetValue = if (isSelected) 10.dp else 0.dp,
+                    animationSpec = smoothSpring,
+                    label = "shadow"
+                )
+
                 Box(
                     modifier = Modifier
                         .offset(y = offsetY)
@@ -201,15 +306,14 @@ fun LabeledBottomDock(
                         ) { onItemClick(item.route) },
                     contentAlignment = Alignment.Center
                 ) {
-                    // Floating Circle Surface
                     Surface(
                         shape = CircleShape,
                         color = if (isSelected) activeColor else Color.Transparent,
                         modifier = Modifier
-                            .size(if (isSelected) 64.dp else 48.dp) // Large Active Circle
+                            .size(circleSize)
                             .scale(scale)
                             .shadow(
-                                elevation = if (isSelected) 10.dp else 0.dp,
+                                elevation = shadowElevation,
                                 shape = CircleShape,
                                 spotColor = activeColor.copy(alpha = 0.6f)
                             ),
@@ -219,7 +323,7 @@ fun LabeledBottomDock(
                                 imageVector = item.icon,
                                 contentDescription = item.label,
                                 tint = if (isSelected) MaterialTheme.colorScheme.onPrimary else inactiveColor,
-                                modifier = Modifier.size(if (isSelected) 32.dp else 28.dp)
+                                modifier = Modifier.size(iconSize)
                             )
                         }
                     }

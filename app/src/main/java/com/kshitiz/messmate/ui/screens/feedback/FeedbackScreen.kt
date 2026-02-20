@@ -92,7 +92,7 @@ fun FeedbackScreen(
                         tint = MaterialTheme.colorScheme.onPrimary
                     )
                 }
-                Spacer(modifier = Modifier.width(16.dp))
+                Spacer(modifier = Modifier.width(2.dp))
                 // Refined Title: Single line, elegant weight
                 Text(
                     text = "Rate your $mealType",

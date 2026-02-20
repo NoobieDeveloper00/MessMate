@@ -6,7 +6,7 @@ import com.kshitiz.messmate.util.Resource
 import kotlinx.coroutines.flow.Flow
 
 class GetFeedbackSummaryUseCase(private val repository: FeedbackRepository) {
-    operator fun invoke(mealType: String): Flow<Resource<FeedbackSummary>> {
-        return repository.getFeedbackSummary(mealType)
+    operator fun invoke(mealType: String, date: String): Flow<Resource<FeedbackSummary>> {
+        return repository.getFeedbackSummary(mealType, date)
     }
 }

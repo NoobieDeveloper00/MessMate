@@ -4,9 +4,11 @@ import com.kshitiz.messmate.ui.viewmodel.AdminFeedbackViewModel
 import com.kshitiz.messmate.domain.model.FeedbackSummary
 import com.kshitiz.messmate.domain.model.FeedbackItem
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
@@ -31,9 +33,7 @@ fun AdminFeedbackScreen(
     viewModel: AdminFeedbackViewModel = koinViewModel()
 ) {
     MessMateTheme(darkTheme = true) {
-        val adminFeedbackUiState by viewModel.uiState.collectAsState()
-        val state = adminFeedbackUiState.summaryState
-        var selectedMeal by remember { mutableStateOf("Breakfast") }
+        val uiState by viewModel.uiState.collectAsState()
         val meals = listOf("Breakfast", "Lunch", "Snacks", "Dinner")
 
         Scaffold(
@@ -60,19 +60,40 @@ fun AdminFeedbackScreen(
                     .fillMaxSize()
                     .padding(padding)
             ) {
+                // --- Day Selector ---
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(16.dp),
+                        .horizontalScroll(rememberScrollState())
+                        .padding(horizontal = 12.dp, vertical = 8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    uiState.availableDates.forEach { (dateStr, label) ->
+                        FilterChip(
+                            selected = uiState.selectedDate == dateStr,
+                            onClick = { viewModel.selectDate(dateStr) },
+                            label = { Text(label, maxLines = 1) },
+                            colors = FilterChipDefaults.filterChipColors(
+                                selectedContainerColor = MaterialTheme.colorScheme.primary,
+                                selectedLabelColor = MaterialTheme.colorScheme.onPrimary,
+                                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.2f),
+                                labelColor = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        )
+                    }
+                }
+
+                // --- Meal Type Selector ---
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 4.dp),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     meals.forEach { meal ->
                         FilterChip(
-                            selected = selectedMeal == meal,
-                            onClick = {
-                                selectedMeal = meal
-                                viewModel.loadFeedback(meal)
-                            },
+                            selected = uiState.selectedMeal == meal,
+                            onClick = { viewModel.selectMeal(meal) },
                             label = { Text(meal) },
                             colors = FilterChipDefaults.filterChipColors(
                                 selectedContainerColor = MaterialTheme.colorScheme.primary,
@@ -84,7 +105,8 @@ fun AdminFeedbackScreen(
                     }
                 }
 
-                when (val result = state) {
+                // --- Content ---
+                when (val result = uiState.summaryState) {
                     is Resource.Loading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
                     is Resource.Error -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { Text("Error: ${result.message}", color = MaterialTheme.colorScheme.error) }
                     is Resource.Success -> {
@@ -98,7 +120,6 @@ fun AdminFeedbackScreen(
     }
 }
 
-// ... (Keep the FeedbackContent, SentimentChart, and CommentItem functions exactly as they were in the previous response, they were already correct for dark mode) ...
 @Composable
 fun FeedbackContent(summary: FeedbackSummary) {
     LazyColumn(

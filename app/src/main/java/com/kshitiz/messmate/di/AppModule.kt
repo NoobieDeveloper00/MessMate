@@ -34,6 +34,7 @@ val useCaseModule = module {
     factory { MarkAttendanceUseCase(get()) }
     factory { SubmitFeedbackUseCase(get()) }
     factory { GetFeedbackSummaryUseCase(get()) }
+    factory { DeleteOldFeedbackUseCase(get()) }
     factory { GetUserAttendanceUseCase(get()) }
     factory { IsAdminUseCase(get()) }
     factory { LogoutUseCase(get()) }
@@ -46,7 +47,7 @@ val viewModelModule = module {
     viewModel { MenuViewModel(get(), get(), get(), get()) }
     viewModel { ProfileViewModel(get(), get(), get(), get()) }
     viewModel { FeedbackViewModel(get(), get()) }
-    viewModel { AdminFeedbackViewModel(get()) }
+    viewModel { AdminFeedbackViewModel(get(), get()) }
     viewModel { AdminMenuViewModel(get()) }
 }
 
